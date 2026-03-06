@@ -1,0 +1,88 @@
+# Default configuration for MLP-SIM-MVMD-AM-N-BEATs
+
+# Data configuration
+data:
+  train_path: "data/train.csv"
+  val_path: "data/val.csv"
+  test_path: "data/test.csv"
+  target_col: "NH3N"
+  feature_cols: null          # null = use all columns except target
+  seq_len: 24                 # input sequence length (hours)
+  pred_len: 1                 # prediction horizon
+  batch_size: 32
+  num_workers: 4
+  train_ratio: 0.7
+  val_ratio: 0.1
+  test_ratio: 0.2
+
+# MVMD configuration
+mvmd:
+  num_modes: 5                # number of IMFs to decompose into
+  alpha: 2000                 # bandwidth constraint
+  tau: 0.0                    # noise tolerance
+  tol: 1.0e-7                 # convergence tolerance
+  max_iter: 500               # maximum number of iterations
+
+# MLP (SIM stage) configuration
+mlp:
+  input_size: 24              # matches seq_len * num_features
+  hidden_sizes: [128, 64, 32]
+  dropout: 0.1
+  activation: "relu"
+
+# Attention mechanism configuration
+attention:
+  embed_dim: 64
+  num_heads: 4
+  dropout: 0.1
+  use_positional_encoding: true
+
+# N-BEATs configuration
+nbeats:
+  input_size: 24              # matches seq_len
+  output_size: 1              # matches pred_len
+  stack_types: ["trend", "seasonality", "generic"]
+  num_blocks_per_stack: 3
+  num_layers: 4
+  layer_width: 256
+  dropout: 0.1
+  share_weights_in_stack: false
+
+# SIM module configuration
+sim:
+  embed_dim: 64
+  num_heads: 4
+  dropout: 0.1
+
+# Ensemble model configuration
+ensemble:
+  use_residual: true
+  final_hidden_size: 64
+  dropout: 0.1
+
+# Training configuration
+training:
+  epochs: 100
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  optimizer: "adam"           # adam | sgd | adamw
+  scheduler: "cosine"         # cosine | step | plateau | none
+  scheduler_step_size: 30
+  scheduler_gamma: 0.5
+  early_stopping_patience: 15
+  grad_clip: 1.0
+  loss: "mse"                 # mse | mae | huber
+
+# Logging & checkpoint
+logging:
+  log_dir: "logs"
+  log_level: "INFO"
+  save_dir: "checkpoints"
+  save_best_only: true
+  log_interval: 10            # log every N batches
+
+# Reproducibility
+seed: 42
+
+# Device
+device: "auto"                # auto | cpu | cuda | mps
